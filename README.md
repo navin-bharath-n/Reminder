@@ -48,8 +48,8 @@ Remainder/
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Reminder-.git
-cd Reminder-
+git clone https://github.com/navin-bharath-n/Reminder.git
+cd Reminder
 ```
 
 ### 2. Setup the Backend
@@ -157,4 +157,4 @@ npm run dev
 
 ## 📄 License
 
-MIT © [Navin Bharath](https://github.com/YOUR_USERNAME)
+MIT © [Navin Bharath](https://github.com/navin-bharath-n)
