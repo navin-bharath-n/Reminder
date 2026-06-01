@@ -4,6 +4,7 @@ A full-stack web application that lets you schedule smart reminders delivered vi
 
 ![AI Reminder Scheduler](https://img.shields.io/badge/Stack-React%20%2B%20Node.js-blueviolet?style=for-the-badge)
 ![Gemini AI](https://img.shields.io/badge/AI-Google%20Gemini-orange?style=for-the-badge)
+![SendGrid](https://img.shields.io/badge/Email-SendGrid-blue?style=for-the-badge)
 ![Twilio](https://img.shields.io/badge/SMS-Twilio-red?style=for-the-badge)
 
 ---
@@ -11,7 +12,7 @@ A full-stack web application that lets you schedule smart reminders delivered vi
 ## ✨ Features
 
 - 🧠 **AI Smart Fill** — Type a natural sentence like *"Remind me at 5pm tomorrow about the meeting"* and Gemini fills in all form fields automatically
-- 📧 **Email Notifications** — Sends a confirmation email on signup + a reminder email 30 minutes before the event
+- 📧 **Email Notifications** — Sends a confirmation email on signup + a reminder email 30 minutes before the event (powered by **SendGrid**)
 - 📱 **SMS Notifications** — Optional Twilio SMS alerts to any phone number
 - 🎨 **3D Glassmorphism UI** — Deep-space themed, fully responsive design
 - ⚡ **Real-time Cron Scheduling** — Node.js cron job checks every minute and fires reminders on time
@@ -23,7 +24,7 @@ A full-stack web application that lets you schedule smart reminders delivered vi
 ```
 Remainder/
 ├── backend/              # Node.js + Express API
-│   ├── server.js         # Main server (routes, Gemini, Twilio, Nodemailer)
+│   ├── server.js         # Main server (routes, Gemini, Twilio, Nodemailer + SendGrid)
 │   ├── .env.example      # Template for environment variables
 │   └── package.json
 │
@@ -41,7 +42,7 @@ Remainder/
 
 ### Prerequisites
 - Node.js v18+
-- A Gmail account with an [App Password](https://myaccount.google.com/apppasswords)
+- A [SendGrid account](https://sendgrid.com) (free tier available) with a verified sender email
 - A [Twilio account](https://console.twilio.com) (free trial works)
 - A [Gemini API key](https://aistudio.google.com) (free)
 
@@ -63,13 +64,16 @@ cp .env.example .env
 Edit `.env` and fill in your credentials:
 
 ```env
-GMAIL_USER=your_gmail@gmail.com
-GMAIL_PASS=your_gmail_app_password
+# SendGrid (Email)
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SENDGRID_FROM_EMAIL=your_verified_sender@yourdomain.com
 
+# Twilio (SMS)
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_AUTH_TOKEN=your_twilio_auth_token
 TWILIO_PHONE_NUMBER=+1xxxxxxxxxx
 
+# Google Gemini AI
 GEMINI_API_KEY=your_gemini_api_key
 ```
 
@@ -139,10 +143,21 @@ npm run dev
 |-------|-----------|
 | Frontend | React, Vite, Vanilla CSS |
 | Backend | Node.js, Express |
-| AI | Google Gemini 1.5 Flash |
-| Email | Nodemailer + Gmail SMTP |
+| AI | Google Gemini 2.5 Flash |
+| Email | Nodemailer + SendGrid SMTP |
 | SMS | Twilio |
 | Scheduling | node-cron |
+
+---
+
+## 🔐 SendGrid Setup Guide
+
+1. Sign up at [sendgrid.com](https://sendgrid.com)
+2. Go to **Settings → API Keys** → Create an API key with **Mail Send** permission
+3. Go to **Settings → Sender Authentication** → Verify your sender email
+4. Add the API key and verified email to your `.env` file
+
+> ✅ SendGrid's free tier allows **100 emails/day** — perfect for personal use.
 
 ---
 
@@ -152,6 +167,7 @@ npm run dev
 - Reminders are stored **in-memory** — they reset when the server restarts
 - The phone number must be in **E.164 format** (e.g. `+919876543210`)
 - On Twilio free trial, you can only send SMS to verified numbers
+- Never commit your `.env` file — it's already in `.gitignore`
 
 ---
 
