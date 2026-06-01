@@ -9,6 +9,21 @@ const STEPS = [
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:5000" : "https://reminder-yr4g.onrender.com");
 
+const formatToLocalDateTime = (dateInput) => {
+  if (!dateInput) return "";
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return "";
+  
+  const pad = (num) => String(num).padStart(2, "0");
+  const year = d.getFullYear();
+  const month = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  const hours = pad(d.getHours());
+  const minutes = pad(d.getMinutes());
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 function getStatusClass(status) {
   if (!status) return "";
   if (status.startsWith("✅")) return "status-banner status-success";
@@ -37,7 +52,7 @@ function App() {
       const res = await fetch(`${API_BASE_URL}/api/parse-reminder`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: smartPrompt }),
+        body: JSON.stringify({ prompt: smartPrompt, currentLocalTime: new Date().toString() }),
       });
 
       const resData = await res.json();
@@ -47,7 +62,7 @@ function App() {
         if (data.phone) setPhone(data.phone);
         if (data.purpose) setPurpose(data.purpose);
         if (data.message) setMessage(data.message);
-        if (data.scheduledTime) setTargetTime(data.scheduledTime);
+        if (data.scheduledTime) setTargetTime(formatToLocalDateTime(data.scheduledTime));
         setStatus("✨ Smart details filled! Please verify and submit.");
         setActiveStep(2);
       } else {
@@ -73,7 +88,7 @@ function App() {
       const res = await fetch(`${API_BASE_URL}/api/reminders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, phone, purpose, message, scheduledTime: targetTime }),
+        body: JSON.stringify({ email, phone, purpose, message, scheduledTime: new Date(targetTime).toISOString() }),
       });
 
       const data = await res.json();

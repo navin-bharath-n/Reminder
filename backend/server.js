@@ -56,7 +56,7 @@ const sendSMS = async (phone, messageText) => {
 
 // POST /api/parse-reminder — Gemini AI natural language parser
 app.post("/api/parse-reminder", async (req, res) => {
-  const { prompt } = req.body;
+  const { prompt, currentLocalTime } = req.body;
   if (!prompt) return res.status(400).json({ success: false, message: "No prompt provided." });
 
   if (!process.env.GEMINI_API_KEY) {
@@ -65,11 +65,11 @@ app.post("/api/parse-reminder", async (req, res) => {
 
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const now = new Date().toISOString();
+    const now = currentLocalTime || new Date().toString();
     const systemPrompt = `
-You are a reminder parsing assistant. The current date/time is ${now}.
+You are a reminder parsing assistant. The user's current date/time and timezone is ${now}.
 Extract reminder details from the user's sentence and return ONLY a valid JSON object (no markdown, no explanation).
 
 JSON format:
