@@ -7,6 +7,8 @@ const STEPS = [
   { label: "Confirm", icon: "🚀" },
 ];
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:5000" : "https://reminder-yr4g.onrender.com");
+
 function getStatusClass(status) {
   if (!status) return "";
   if (status.startsWith("✅")) return "status-banner status-success";
@@ -32,7 +34,7 @@ function App() {
     setActiveStep(1);
 
     try {
-      const res = await fetch("http://localhost:5000/api/parse-reminder", {
+      const res = await fetch(`${API_BASE_URL}/api/parse-reminder`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: smartPrompt }),
@@ -68,7 +70,7 @@ function App() {
     setActiveStep(2);
 
     try {
-      const res = await fetch("http://localhost:5000/api/reminders", {
+      const res = await fetch(`${API_BASE_URL}/api/reminders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, phone, purpose, message, scheduledTime: targetTime }),
