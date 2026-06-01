@@ -13,14 +13,14 @@ app.use(bodyParser.json());
 
 const reminders = [];
 
-// ✅ Replace your existing transporter with this
+// ✅ Nodemailer + SendGrid transport (uses HTTPS, not SMTP)
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  host: 'smtp.sendgrid.net',
+  port: 587,
+  secure: false,
   auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
+    user: 'apikey',                          // literally the string "apikey"
+    pass: process.env.SENDGRID_API_KEY       // your SendGrid API key
   }
 });
 
@@ -127,7 +127,7 @@ app.post("/api/reminders", async (req, res) => {
   // Send confirmation email
   transporter.sendMail(
     {
-      from: process.env.GMAIL_USER || process.env.EMAIL_USER,
+      from: process.env.SENDGRID_FROM_EMAIL,
       to: email,
       subject: "Reminder Registered ✅",
       text: `Your reminder is set for ${scheduledDate.toLocaleString()}.\n\nMessage: ${message}`,
@@ -170,7 +170,7 @@ cron.schedule("* * * * *", () => {
       // Send Email Reminder
       transporter.sendMail(
         {
-          from: process.env.GMAIL_USER || process.env.EMAIL_USER,
+          from: process.env.SENDGRID_FROM_EMAIL,
           to: reminder.email,
           subject: "⏰ Upcoming Reminder!",
           text: `Reminder: ${reminder.message}\nScheduled at: ${reminder.scheduledTime.toLocaleString()}`,
