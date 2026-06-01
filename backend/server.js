@@ -13,15 +13,15 @@ app.use(bodyParser.json());
 
 const reminders = [];
 
-// Email Transporter
+// ✅ Replace your existing transporter with this
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: 'smtp.gmail.com',
   port: 465,
   secure: true,
   auth: {
-    user: process.env.GMAIL_USER || process.env.EMAIL_USER,
-    pass: process.env.GMAIL_PASS || process.env.EMAIL_PASS,
-  },
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  }
 });
 
 // Configure Twilio
