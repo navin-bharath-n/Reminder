@@ -14,7 +14,12 @@ app.use(bodyParser.json());
 const reminders = [];
 
 // ✅ SendGrid Web API (uses HTTPS port 443 — works on Render.com)
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+if (!process.env.SENDGRID_API_KEY) {
+  console.error("❌ SENDGRID_API_KEY is not set! Emails will not be sent.");
+} else {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log("✅ SendGrid initialized. From:", process.env.SENDGRID_FROM_EMAIL || "⚠️ SENDGRID_FROM_EMAIL not set!");
+}
 
 // Configure Twilio
 const twilioClient = twilio(
@@ -125,7 +130,10 @@ app.post("/api/reminders", async (req, res) => {
       text: `Your reminder is set for ${scheduledDate.toLocaleString()}.\n\nMessage: ${message}`,
     })
     .then(() => console.log("✅ Confirmation email sent to", email))
-    .catch((err) => console.error("❌ Error sending confirmation email:", err.message));
+    .catch((err) => {
+      console.error("❌ Error sending confirmation email:", err.message);
+      if (err.response) console.error("   SendGrid details:", JSON.stringify(err.response.body));
+    });
 
   // Send confirmation SMS
   if (phone) {
@@ -162,7 +170,10 @@ cron.schedule("* * * * *", () => {
           text: `Reminder: ${reminder.message}\nScheduled at: ${reminder.scheduledTime.toLocaleString()}`,
         })
         .then(() => console.log("📧 Reminder email sent to", reminder.email))
-        .catch((err) => console.error("❌ Error sending reminder email:", err.message));
+        .catch((err) => {
+          console.error("❌ Error sending reminder email:", err.message);
+          if (err.response) console.error("   SendGrid details:", JSON.stringify(err.response.body));
+        });
 
       // Send SMS Reminder
       if (reminder.phone) {
