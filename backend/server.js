@@ -1,6 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const nodemailer = require("nodemailer");
+const sgMail = require("@sendgrid/mail");
 const cron = require("node-cron");
 const cors = require("cors");
 const twilio = require("twilio");
@@ -13,16 +13,8 @@ app.use(bodyParser.json());
 
 const reminders = [];
 
-// ✅ Nodemailer + SendGrid transport (uses HTTPS, not SMTP)
-const transporter = nodemailer.createTransport({
-  host: 'smtp.sendgrid.net',
-  port: 587,
-  secure: false,
-  auth: {
-    user: 'apikey',                          // literally the string "apikey"
-    pass: process.env.SENDGRID_API_KEY       // your SendGrid API key
-  }
-});
+// ✅ SendGrid Web API (uses HTTPS port 443 — works on Render.com)
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Configure Twilio
 const twilioClient = twilio(
@@ -124,22 +116,16 @@ app.post("/api/reminders", async (req, res) => {
 
   reminders.push(reminder);
 
-  // Send confirmation email
-  transporter.sendMail(
-    {
+  // Send confirmation email via SendGrid Web API
+  sgMail
+    .send({
       from: process.env.SENDGRID_FROM_EMAIL,
       to: email,
       subject: "Reminder Registered ✅",
       text: `Your reminder is set for ${scheduledDate.toLocaleString()}.\n\nMessage: ${message}`,
-    },
-    (err, info) => {
-      if (err) {
-        console.error("❌ Error sending confirmation email:", err);
-      } else {
-        console.log("✅ Confirmation email sent:", info.response);
-      }
-    }
-  );
+    })
+    .then(() => console.log("✅ Confirmation email sent to", email))
+    .catch((err) => console.error("❌ Error sending confirmation email:", err.message));
 
   // Send confirmation SMS
   if (phone) {
@@ -167,22 +153,16 @@ cron.schedule("* * * * *", () => {
         reminder.scheduledTime.toLocaleString()
       );
 
-      // Send Email Reminder
-      transporter.sendMail(
-        {
+      // Send Email Reminder via SendGrid Web API
+      sgMail
+        .send({
           from: process.env.SENDGRID_FROM_EMAIL,
           to: reminder.email,
           subject: "⏰ Upcoming Reminder!",
           text: `Reminder: ${reminder.message}\nScheduled at: ${reminder.scheduledTime.toLocaleString()}`,
-        },
-        (err, info) => {
-          if (err) {
-            console.error("❌ Error sending reminder email:", err);
-          } else {
-            console.log("📧 Reminder email sent to", reminder.email);
-          }
-        }
-      );
+        })
+        .then(() => console.log("📧 Reminder email sent to", reminder.email))
+        .catch((err) => console.error("❌ Error sending reminder email:", err.message));
 
       // Send SMS Reminder
       if (reminder.phone) {
